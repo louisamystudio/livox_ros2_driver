@@ -29,7 +29,11 @@ message(STATUS "${PROJECT_NAME} version: ${LIVOX_ROS_DRIVER_VERSION}")
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 find_package(PCL REQUIRED)
-find_package(livox_sdk REQUIRED)
+# find_package(livox_sdk REQUIRED) DISABLED - using external legacy SDK
+
+# ---- Avia legacy SDK path patch ----
+include_directories(${CMAKE_SOURCE_DIR}/../Livox-SDK/sdk_core/include)
+link_directories(${CMAKE_SOURCE_DIR}/../Livox-SDK/build/sdk_core)
 
 # check apr
 find_package(PkgConfig)
@@ -39,8 +43,8 @@ if (APR_FOUND)
 	message(${APR_LIBRARIES})
 endif (APR_FOUND)
 
-## make sure the livox_sdk_static library is installed
-find_library(LIVOX_SDK_LIBRARY liblivox_sdk_static.a /usr/local/lib)
+## make sure the livox_sdk library is available (will be built separately)
+# find_library(LIVOX_SDK_LIBRARY liblivox_sdk_static.a /usr/local/lib) DISABLED
 
 ## PCL library
 link_directories(${PCL_LIBRARY_DIRS})
@@ -67,7 +71,7 @@ target_compile_options(${PROJECT_NAME}
   PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wno-missing-field-initializers -fPIC>
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${livox_sdk_INCLUDE_DIRS})
+# target_include_directories(${PROJECT_NAME} PRIVATE ${livox_sdk_INCLUDE_DIRS}) DISABLED
 
 # include file direcotry
 target_include_directories(${PROJECT_NAME} PUBLIC
@@ -84,7 +88,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # link libraries
 target_link_libraries(${PROJECT_NAME}
-	${livox_sdk_LIBRARIES}
+	livox_sdk_static
 	${Boost_LIBRARY}
 	${PCL_LIBRARIES}
 	${APR_LIBRARIES}
